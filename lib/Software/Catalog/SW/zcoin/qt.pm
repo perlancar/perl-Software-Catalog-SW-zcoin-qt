@@ -26,7 +26,7 @@ sub get_latest_version {
 
     extract_from_url(
         url => "https://github.com/zcoinofficial/zcoin/releases",
-        re  => qr!/zcoinofficial/zcoin/releases/download/\d+(?:\.\d+)+/zcoin(?:-qt)?-(\d+(?:\.\d+))-linux64\.!,
+        re  => qr!/zcoinofficial/zcoin/releases/download/\d+(?:\.\d+)+/zcoin(?:-qt)?-(\d+(?:\.\d+)+)-linux64\.!,
     );
 }
 
