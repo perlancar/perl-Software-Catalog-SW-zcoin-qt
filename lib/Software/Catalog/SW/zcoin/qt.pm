@@ -11,13 +11,13 @@ use PerlX::Maybe;
 
 use Role::Tiny::With;
 with 'Software::Catalog::Role::Software';
-#with 'Software::Catalog::Role::VersionScheme::SemVer';
 
 use Software::Catalog::Util qw(extract_from_url);
 
 sub meta {
     return {
         homepage_url => "http://zcoin.io/",
+        versioning_scheme => "Dotted",
     };
 }
 
