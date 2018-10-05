@@ -10,6 +10,7 @@ use warnings;
 use PerlX::Maybe;
 
 use Role::Tiny::With;
+with 'Versioning::Scheme::Dotted';
 with 'Software::Catalog::Role::Software';
 
 use Software::Catalog::Util qw(extract_from_url);
@@ -62,17 +63,20 @@ sub get_download_url {
          "",
          "https://github.com/zcoinofficial/zcoin/releases/download/$version/$filename",
      ), {
+         'func.version' => $version,
          'func.filename' => $filename,
      }];
 }
 
-sub get_programs {
+sub get_archive_info {
     my ($self, %args) = @_;
-    [200, "OK", [
-        {name=>"zcoin-cli", path=>"/bin"},
-        {name=>"zcoin-qt", path=>"/bin"},
-        {name=>"zcoind", path=>"/bin"},
-    ]];
+    [200, "OK", {
+        programs => [
+            {name=>"zcoin-cli", path=>"/bin"},
+            {name=>"zcoin-qt", path=>"/bin"},
+            {name=>"zcoind", path=>"/bin"},
+        ],
+    }];
 }
 
 1;
