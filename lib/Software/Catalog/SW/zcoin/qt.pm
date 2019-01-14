@@ -1,3 +1,5 @@
+## no critic: ControlStructures::ProhibitMutatingListFunctions
+
 package Software::Catalog::SW::zcoin::qt;
 
 # DATE
