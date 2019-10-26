@@ -1,3 +1,9 @@
+0.007   2019-10-26  Released-By: PERLANCAR; Urgency: high
+
+	- Update to Software::Catalog::Role::Software 1.0.6 (incompatible
+	  change, renamed methods).
+
+
 0.006   2019-01-14  Released-By: PERLANCAR
 
 	- Implement get_release_note() and get_available_versions().
