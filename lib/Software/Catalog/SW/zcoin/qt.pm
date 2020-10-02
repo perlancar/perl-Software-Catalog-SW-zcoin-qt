@@ -2,7 +2,9 @@
 
 package Software::Catalog::SW::zcoin::qt;
 
+# AUTHORITY
 # DATE
+# DIST
 # VERSION
 
 use 5.010001;
@@ -18,9 +20,73 @@ with 'Software::Catalog::Role::Software';
 
 use Software::Catalog::Util qw(extract_from_url);
 
+sub archive_info {
+    my ($self, %args) = @_;
+    [200, "OK", {
+        programs => [
+            {name=>"zcoin-cli", path=>"/bin"},
+            {name=>"zcoin-qt", path=>"/bin"},
+            {name=>"zcoind", path=>"/bin"},
+        ],
+    }];
+}
+
+sub available_versions {
+    my ($self, %args) = @_;
+
+    my $res = extract_from_url(
+        url => "https://github.com/zcoinofficial/zcoin/releases",
+        re  => qr!/zcoinofficial/zcoin/tree/([^"/]+)!,
+        all => 1,
+    );
+    return $res unless $res->[0] == 200;
+    # sort versions from earliest
+    $res->[2] = [ sort { $self->cmp_version($a, $b) }
+                      map { s/\Av//; $_ }
+                      @{$res->[2]}];
+    $res;
+}
+
+sub canon2native_arch_map {
+    return +{
+        'linux-x86_64' => 'linux64',
+        'win64' => 'win64',
+    },
+}
+
+sub download_url {
+    my ($self, %args) = @_;
+
+    my $version  = $args{version};
+    my $rversion = $args{version};
+    if (!$version) {
+        my $verres = $self->latest_version(maybe arch => $args{arch});
+        return [500, "Can't get latest version: $verres->[0] - $verres->[1]"]
+            unless $verres->[0] == 200;
+        $version  = $verres->[2];
+        $rversion = $verres->[3]{'func.real_v'};
+    }
+
+    my $filename;
+    if ($args{arch} =~ /linux/) {
+        $filename = "zcoin-$version-" . $self->_canon2native_arch($args{arch}) . ".tar.gz";
+    } else {
+        $filename = "zcoin-qt-$version-" . $self->_canon2native_arch($args{arch}) . ".exe";
+    }
+
+    [200, "OK",
+     join(
+         "",
+         "https://github.com/zcoinofficial/zcoin/releases/download/$rversion/$filename",
+     ), {
+         'func.version' => $version,
+         'func.filename' => $filename,
+     }];
+}
+
 sub homepage_url {"http://zcoin.io/" }
 
-sub versioning_scheme { "Dotted" }
+sub is_dedicated_profile { 0 }
 
 sub latest_version {
     my ($self, %args) = @_;
@@ -38,29 +104,6 @@ sub latest_version {
             }
         },
     );
-}
-
-sub canon2native_arch_map {
-    return +{
-        'linux-x86_64' => 'linux64',
-        'win64' => 'win64',
-    },
-}
-
-sub available_versions {
-    my ($self, %args) = @_;
-
-    my $res = extract_from_url(
-        url => "https://github.com/zcoinofficial/zcoin/releases",
-        re  => qr!/zcoinofficial/zcoin/tree/([^"/]+)!,
-        all => 1,
-    );
-    return $res unless $res->[0] == 200;
-    # sort versions from earliest
-    $res->[2] = [ sort { $self->cmp_version($a, $b) }
-                      map { s/\Av//; $_ }
-                      @{$res->[2]}];
-    $res;
 }
 
 sub release_note {
@@ -100,48 +143,7 @@ sub release_note {
   );
 }
 
-# version
-# arch
-sub download_url {
-    my ($self, %args) = @_;
-
-    my $version  = $args{version};
-    my $rversion = $args{version};
-    if (!$version) {
-        my $verres = $self->latest_version(maybe arch => $args{arch});
-        return [500, "Can't get latest version: $verres->[0] - $verres->[1]"]
-            unless $verres->[0] == 200;
-        $version  = $verres->[2];
-        $rversion = $verres->[3]{'func.real_v'};
-    }
-
-    my $filename;
-    if ($args{arch} =~ /linux/) {
-        $filename = "zcoin-$version-" . $self->_canon2native_arch($args{arch}) . ".tar.gz";
-    } else {
-        $filename = "zcoin-qt-$version-" . $self->_canon2native_arch($args{arch}) . ".exe";
-    }
-
-    [200, "OK",
-     join(
-         "",
-         "https://github.com/zcoinofficial/zcoin/releases/download/$rversion/$filename",
-     ), {
-         'func.version' => $version,
-         'func.filename' => $filename,
-     }];
-}
-
-sub archive_info {
-    my ($self, %args) = @_;
-    [200, "OK", {
-        programs => [
-            {name=>"zcoin-cli", path=>"/bin"},
-            {name=>"zcoin-qt", path=>"/bin"},
-            {name=>"zcoind", path=>"/bin"},
-        ],
-    }];
-}
+sub versioning_scheme { "Dotted" }
 
 1;
 # ABSTRACT: Zcoin desktop GUI client
